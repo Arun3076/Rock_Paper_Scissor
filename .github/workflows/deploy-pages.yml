@@ -1,23 +1,31 @@
-name: Deploy Rock_Paper_Scissor to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_run:
-    workflows: ["CI for Rock_Paper_Scissor"]
-    types:
-      - completed
-    branches: [ main, master ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+  permissions:
+    contents: read
+    pages: write
+    id-token: write

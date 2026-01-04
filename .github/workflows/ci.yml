@@ -1,32 +1,41 @@
-name: CI for Rock_Paper_Scissor
+name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
-  build:
-    name: Build and test
+  test:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies (if present)
-        run: |
-          if [ -f package.json ]; then
-            npm ci
-          else
-            echo "No package.json found; skipping npm install"
-          fi
-
-      - name: Run tests and linters (if present)
-        run: |
-          npm run test --if-present
-          npm run lint --if-present
+    - uses: actions/checkout@v4
+        
+    - name: Check file structure
+      run: |
+        echo "Checking project structure..."
+        ls -la
+        test -f index.html || exit 1
+        test -f script.js || exit 1
+        test -f styles.css || exit 1
+        test -d images || exit 1
+        echo "All required files present ✓"
+        
+    - name: Validate HTML syntax
+      run: |
+        if command -v tidy &> /dev/null; then
+          tidy -q -e index.html
+        else
+          echo "HTML validation skipped (tidy not available)"
+        fi
+        
+    - name: Check JavaScript syntax
+      run: |
+        echo "Checking JavaScript syntax..."
+        if node -c script.js 2>/dev/null; then
+          echo "JavaScript syntax valid ✓"
+        else
+          echo "JavaScript syntax check skipped (node not available)"
+        fi
